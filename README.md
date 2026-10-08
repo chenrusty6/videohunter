@@ -30,7 +30,7 @@
 ## 📥 下載與安裝 (Quick Start)
 
 ### 方式 A：下載完整免安裝綠色版（推薦）
-1. 至本專案的 [Releases 頁面](https://github.com/chenrusty6/videohunter/releases) 下載最新的 **`影速獵手_完整綠色免安裝版.zip`**。
+1. 至本專案的 [Releases 頁面](https://github.com/chenrusty6/videohunter/releases) 下載最新的 **`VideoHunter-v1.0.0-Windows-Portable.zip`**。
 2. 解壓縮至任意資料夾（例如 `D:\影速獵手`）。
 3. 雙擊執行目錄內的 **`一鍵安裝與註冊右鍵.bat`**。
 4. 完成！系統會自動建立桌面捷徑並註冊 Windows 右鍵選單。
