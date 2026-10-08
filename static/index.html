@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>影速獵手 (VideoHunter) 控制台</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <img src="/static/icon.png" alt="Logo" class="logo-img" />
+        <div>
+          <h1>影速獵手 <span class="brand-tag">VideoHunter</span></h1>
+          <p class="subtitle">極速影音隨心抓 · 支援社群平台、Vimeo、YouTube 全網影音</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnOpenFolder" class="btn btn-secondary">
+          <span>📁</span> 開啟儲存資料夾
+        </button>
+        <button id="btnFromClipboard" class="btn btn-primary glow">
+          <span>📋</span> 下載剪貼簿網址
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Card: Quick Download -->
+    <section class="card download-card">
+      <div class="input-group">
+        <input 
+          type="text" 
+          id="urlInput" 
+          placeholder="在此貼上影片網址 (YouTube, Facebook, Instagram, Vimeo, TikTok, X 等)..."
+          autocomplete="off"
+        />
+        <select id="qualitySelect" class="quality-select">
+          <option value="best">👑 原畫最高畫質 (4K/HD)</option>
+          <option value="1080p">🎬 1080p 高畫質</option>
+          <option value="720p">📱 720p 標準畫質</option>
+          <option value="mp3">🎵 擷取音訊 (MP3 高音質)</option>
+        </select>
+        <button id="btnDownload" class="btn btn-primary">
+          <span>🚀</span> 開始下載
+        </button>
+      </div>
+
+      <!-- Quick Platform Tags -->
+      <div class="platform-tags">
+        <span class="tag">YouTube (4K/8K)</span>
+        <span class="tag">Facebook 臉書</span>
+        <span class="tag">Instagram 貼文/Reels</span>
+        <span class="tag">Vimeo</span>
+        <span class="tag">TikTok 抖音</span>
+        <span class="tag">Twitter / X</span>
+        <span class="tag">Bilibili 嗶哩嗶哩</span>
+      </div>
+    </section>
+
+    <!-- Active Tasks Section -->
+    <section class="card">
+      <div class="section-header">
+        <h2>⚡ 正在下載的任務</h2>
+        <span id="activeCountBadge" class="badge">0 個任務</span>
+      </div>
+      <div id="taskList" class="task-list">
+        <div class="empty-state">目前無進行中的下載任務</div>
+      </div>
+    </section>
+
+    <!-- Settings & Right-Click Guide -->
+    <div class="grid-2">
+      <!-- Settings Panel -->
+      <section class="card">
+        <div class="section-header">
+          <h2>⚙️ 儲存位置與偏好設定</h2>
+          <button id="btnSaveConfig" class="btn btn-sm btn-secondary">儲存設定</button>
+        </div>
+        <div class="settings-form">
+          <div class="form-group">
+            <label for="cfgDownloadDir">預設儲存位置</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="cfgDownloadDir" class="form-control" style="flex: 1;" />
+              <button id="btnBrowseDir" class="btn btn-sm btn-secondary" title="自選資料夾">瀏覽...</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="cfgDefaultQuality">預設下載畫質</label>
+            <select id="cfgDefaultQuality" class="form-control">
+              <option value="best">原畫最高畫質 (4K/HD)</option>
+              <option value="1080p">1080p 高畫質</option>
+              <option value="720p">720p 標準畫質</option>
+              <option value="mp3">MP3 純音訊</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="cfgCookies">社群登入狀態偵測 (下載會員或限定影片)</label>
+            <select id="cfgCookies" class="form-control">
+              <option value="auto">自動偵測 (Chrome / Edge)</option>
+              <option value="chrome">使用 Google Chrome 登入狀態</option>
+              <option value="edge">使用 Microsoft Edge 登入狀態</option>
+              <option value="none">不使用登入狀態 (純訪客)</option>
+            </select>
+          </div>
+          <div class="checkbox-group">
+            <label>
+              <input type="checkbox" id="cfgEnableSubtitles" />
+              自動下載中文字幕 (若影音平台有提供)
+            </label>
+          </div>
+          <div class="checkbox-group">
+            <label>
+              <input type="checkbox" id="cfgNotify" />
+              開啟 Windows 系統通知提示
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Click Menu Features -->
+      <section class="card">
+        <div class="section-header">
+          <h2>🖱️ 滑鼠右鍵選單功能</h2>
+          <button id="btnReinstallMenu" class="btn btn-sm btn-secondary">重新註冊選單</button>
+        </div>
+        <div class="integration-guide">
+          <div class="guide-item">
+            <div class="guide-num">1</div>
+            <div>
+              <strong>Windows 階層式右鍵選單</strong>
+              <p>在任意資料夾或桌面空白處點右鍵，展開「影速獵手」選單：</p>
+              <ul style="margin-left: 16px; margin-top: 4px; font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+                <li>📥 <b>下載到此資料夾</b>：直接下載到當前開啟的資料夾</li>
+                <li>📁 <b>下載到預設儲存位置</b>：直接下載到設定的影片庫</li>
+                <li>📂 <b>自訂位置並下載...</b>：彈出資料夾選擇視窗指定位置</li>
+                <li>⚙️ <b>設定預設儲存位置...</b>：快速更換預設存放目錄</li>
+              </ul>
+            </div>
+          </div>
+          <div class="guide-item">
+            <div class="guide-num">2</div>
+            <div>
+              <strong>瀏覽器看影片時直接下載</strong>
+              <p>在 Chrome 或 Edge 上觀看影片時，在影片上點滑鼠右鍵選「🎬 影速獵手 · 下載此影片」，無須複製貼上即可一鍵背景下載！</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- History Section -->
+    <section class="card">
+      <div class="section-header">
+        <h2>📜 下載歷史紀錄</h2>
+        <button id="btnRefreshHistory" class="btn btn-sm btn-ghost">重新整理</button>
+      </div>
+      <div id="historyList" class="history-list">
+        <div class="empty-state">尚無歷史紀錄</div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>影速獵手 (VideoHunter) · 本機服務運行中 127.0.0.1:58231</p>
+    </footer>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

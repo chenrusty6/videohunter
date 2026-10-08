@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+config.json
+history.json
+thumbnails/
+downloads/
+runtime/
+bin/
+*.zip
+.venv/
+.env
+.env.*
+*.log
