@@ -15,8 +15,11 @@ from core.config_mgr import load_config, save_config
 from core.clipboard import extract_url_from_clipboard
 from core.downloader import run_download
 from core.notifier import notify_info, notify_error
+from core.platform_support import mac_choose_folder
 
 def choose_folder_dialog(title="影速獵手 · 請選擇資料夾", initial_dir=None):
+    if sys.platform == 'darwin':
+        return mac_choose_folder(title)
     try:
         import tkinter as tk
         from tkinter import filedialog
@@ -40,6 +43,10 @@ def open_dashboard():
         import urllib.request
         urllib.request.urlopen(f"http://127.0.0.1:{port}/api/config", timeout=1)
     except Exception:
+        if sys.platform == 'darwin':
+            args = [sys.executable] if getattr(sys, 'frozen', False) else [sys.executable, str(BASE_DIR / 'mac_app.py')]
+            subprocess.Popen(args, start_new_session=True)
+            return
         # Start server silently in background
         vbs_path = BASE_DIR / "start_service.vbs"
         if vbs_path.exists():

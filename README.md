@@ -1,5 +1,8 @@
 # 🎬 影速獵手 (VideoHunter)
 
+> 此分支提供 macOS App 測試版，支援 Apple Silicon / Intel 的獨立打包流程。
+> 使用方式與驗證限制見 [Mac 說明](MAC_README.md)。Windows v1.0.0 保持原樣。
+
 <p align="center">
   <img src="icon.png" width="80" height="80" alt="VideoHunter Logo">
 </p>

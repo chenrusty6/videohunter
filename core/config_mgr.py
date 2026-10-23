@@ -1,12 +1,13 @@
 import os
 import json
 from pathlib import Path
+from .platform_support import DATA_DIR
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-CONFIG_FILE = BASE_DIR / "config.json"
-HISTORY_FILE = BASE_DIR / "history.json"
+CONFIG_FILE = DATA_DIR / "config.json"
+HISTORY_FILE = DATA_DIR / "history.json"
 
-DEFAULT_DOWNLOAD_DIR = str(Path.home() / "Downloads" / "影速獵手_影片庫")
+DEFAULT_DOWNLOAD_DIR = os.environ.get('VIDEOHUNTER_DOWNLOAD_DIR') or str(Path.home() / "Downloads" / "影速獵手_影片庫")
 
 DEFAULT_CONFIG = {
     "app_name": "影速獵手",
@@ -34,6 +35,7 @@ def load_config() -> dict:
 
 def save_config(config_data: dict) -> bool:
     try:
+        CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
         dl_dir = config_data.get("download_dir", DEFAULT_DOWNLOAD_DIR)
         os.makedirs(dl_dir, exist_ok=True)
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:

@@ -2,12 +2,14 @@ import os
 import re
 import urllib.request
 import subprocess
+import sys
 from pathlib import Path
+from .platform_support import DATA_DIR, RESOURCE_DIR, mac_notification
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-ICON_PATH = str(BASE_DIR / "icon.png")
-THUMB_DIR = BASE_DIR / "thumbnails"
-THUMB_DIR.mkdir(exist_ok=True)
+ICON_PATH = str(RESOURCE_DIR / "icon.png")
+THUMB_DIR = DATA_DIR / "thumbnails"
+THUMB_DIR.mkdir(parents=True, exist_ok=True)
 
 # Standard PowerShell AUMID that has full access to Windows 10/11 Notification subsystem
 SYSTEM_AUMID = "{1AC0E4F8-1420-48E9-AA29-764E7C3575E7}\\WindowsPowerShell\\v1.0\\powershell.exe"
@@ -45,7 +47,8 @@ def extract_video_frame(video_path: str) -> str:
     # Try finding ffmpeg
     from .downloader import find_ffmpeg
     ffmpeg_bin = find_ffmpeg()
-    ffmpeg_exe = os.path.join(ffmpeg_bin, "ffmpeg.exe") if ffmpeg_bin else "ffmpeg"
+    executable = 'ffmpeg.exe' if sys.platform == 'win32' else 'ffmpeg'
+    ffmpeg_exe = os.path.join(ffmpeg_bin, executable) if ffmpeg_bin else executable
     
     out_thumb = get_thumb_path(video_path)
     
@@ -76,6 +79,9 @@ def extract_video_frame(video_path: str) -> str:
     return ""
 
 def show_native_toast(title: str, msg: str, hero_image: str = "", action_label: str = "", action_launch: str = ""):
+    if sys.platform == 'darwin':
+        mac_notification(title, msg)
+        return
     icon_path = str(ICON_PATH).replace("\\", "/")
     hero_xml = ""
     if hero_image and os.path.exists(hero_image):
