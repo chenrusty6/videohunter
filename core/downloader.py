@@ -6,7 +6,9 @@ import shutil
 import threading
 import urllib.request
 from pathlib import Path
+import sys
 import yt_dlp
+from .platform_support import ffmpeg_directory
 
 from .config_mgr import load_config, add_history_entry
 from .notifier import notify_start, notify_success, notify_info, notify_error
@@ -26,6 +28,12 @@ BROWSER_HEADERS = {
 }
 
 def find_ffmpeg() -> str:
+    located = ffmpeg_directory()
+    if located:
+        os.environ["PATH"] = located + os.pathsep + os.environ.get("PATH", "")
+        return located
+    if sys.platform != 'win32':
+        return ''
     local_bin = Path(__file__).resolve().parent.parent / "bin"
     if (local_bin / "ffmpeg.exe").exists():
         bin_str = str(local_bin)
@@ -151,7 +159,7 @@ def build_ydl_options(target_dir: str, quality: str = "best", enable_subtitles: 
         "outtmpl": outtmpl,
         "quiet": True,
         "no_warnings": True,
-        "windowsfilenames": True,
+        "windowsfilenames": sys.platform == 'win32',
         "remote_components": ["ejs:github"],
         "retries": 5,
         "fragment_retries": 5,

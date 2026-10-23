@@ -11,3 +11,8 @@ bin/
 .env
 .env.*
 *.log
+build/
+dist/
+dist-macos/
+packaging/generated/
+*.spec

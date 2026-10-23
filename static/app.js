@@ -18,6 +18,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnSaveConfig = document.getElementById("btnSaveConfig");
   const btnBrowseDir = document.getElementById("btnBrowseDir");
   const btnReinstallMenu = document.getElementById("btnReinstallMenu");
+  const btnQuitApp = document.getElementById("btnQuitApp");
+  fetch('/api/platform').then(response => response.json()).then(info => {
+    btnReinstallMenu.hidden = !info.windows_menu;
+    document.getElementById('windowsMenuGuide').hidden = !info.windows_menu;
+    btnQuitApp.hidden = !info.can_shutdown;
+  }).catch(console.error);
+  btnQuitApp.addEventListener('click', async () => {
+    if (!confirm('結束影速獵手？尚未完成的下載會停止。')) return;
+    const response = await fetch('/api/shutdown', {method: 'POST'});
+    if (response.ok) {
+      document.body.innerHTML = '<main style="padding:48px;text-align:center"><h1>影速獵手已結束</h1><p>可以關閉這個分頁；下次使用時重新開啟 VideoHunter App。</p></main>';
+    }
+  });
 
   // Load Initial Config
   async function loadConfig() {

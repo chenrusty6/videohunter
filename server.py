@@ -5,6 +5,9 @@ from pathlib import Path
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import urllib.parse
 import threading
+import sys
+import webbrowser
+from core.platform_support import RESOURCE_DIR, open_folder
 
 BASE_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE_DIR))
@@ -13,7 +16,7 @@ from core.config_mgr import load_config, save_config, get_history
 from core.downloader import start_download_async, active_tasks, active_lock
 from core.clipboard import extract_url_from_clipboard
 
-STATIC_DIR = BASE_DIR / "static"
+STATIC_DIR = RESOURCE_DIR / "static"
 
 def is_allowed_origin(origin: str) -> bool:
     """資安防護：僅允許瀏覽器擴充功能與本機同源請求，阻擋外部惡意網頁進行 CSRF / 本地 RPC 跨域攻擊"""
@@ -61,7 +64,11 @@ class VideoDownloaderHandler(SimpleHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/config":
+        if path == '/api/platform':
+            self._send_json({'platform': sys.platform, 'windows_menu': sys.platform == 'win32',
+                             'can_shutdown': getattr(self.server, 'can_shutdown', False)})
+            return
+        elif path == "/api/config":
             self._send_json(load_config())
             return
         elif path == "/api/tasks":
@@ -76,7 +83,7 @@ class VideoDownloaderHandler(SimpleHTTPRequestHandler):
             cfg = load_config()
             folder = cfg.get("download_dir", "")
             if os.path.exists(folder):
-                os.startfile(folder)
+                open_folder(folder)
                 self._send_json({"status": "ok", "message": "Opened folder"})
             else:
                 self._send_json({"status": "error", "message": "Folder does not exist"}, 404)
@@ -89,7 +96,10 @@ class VideoDownloaderHandler(SimpleHTTPRequestHandler):
             return
         elif path.startswith("/static/"):
             rel_path = path[len("/static/"):]
-            file_path = STATIC_DIR / rel_path
+            file_path = (STATIC_DIR / urllib.parse.unquote(rel_path)).resolve()
+            if not file_path.is_relative_to(STATIC_DIR.resolve()):
+                self._send_json({'status': 'error', 'message': 'Forbidden path'}, 403)
+                return
             if file_path.exists() and file_path.is_file():
                 content_type = "application/octet-stream"
                 if file_path.suffix == ".css":
@@ -183,12 +193,20 @@ class VideoDownloaderHandler(SimpleHTTPRequestHandler):
             return
 
         elif path == "/api/reinstall-menu":
+            if sys.platform != 'win32':
+                self._send_json({'status': 'error', 'message': '此功能僅適用 Windows；Mac 可使用瀏覽器擴充套件。'}, 400)
+                return
             from setup_right_click import install_context_menu
             try:
                 install_context_menu()
                 self._send_json({"status": "ok", "message": "右鍵選單註冊成功"})
             except Exception as e:
                 self._send_json({"status": "error", "message": str(e)}, 500)
+            return
+
+        elif path == '/api/shutdown' and getattr(self.server, 'can_shutdown', False):
+            self._send_json({'status': 'ok'})
+            threading.Thread(target=self.server.shutdown, daemon=True).start()
             return
 
         self.send_response(404)
@@ -223,17 +241,21 @@ class VideoDownloaderHandler(SimpleHTTPRequestHandler):
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-def run_server(port: int = 58231):
+def run_server(port=None, launch_browser=False, can_shutdown=False):
     cfg = load_config()
-    server_port = cfg.get("port", port)
+    server_port = port if port is not None else cfg.get("port", 58231)
     server_address = ("127.0.0.1", server_port)
     httpd = HTTPServer(server_address, VideoDownloaderHandler)
-    print(f"[OK] [4K Video Downloader] 後台服務已啟動: http://127.0.0.1:{server_port}")
+    httpd.can_shutdown = can_shutdown
+    if launch_browser:
+        threading.Thread(target=webbrowser.open, args=(f'http://127.0.0.1:{httpd.server_port}/',), daemon=True).start()
+    print(f"[OK] [VideoHunter] 後台服務已啟動: http://127.0.0.1:{httpd.server_port}")
     print(f"[OK] 管理主頁面: http://127.0.0.1:{server_port}/")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
         print("\n正在停止服務...")
+    finally:
         httpd.server_close()
 
 if __name__ == "__main__":

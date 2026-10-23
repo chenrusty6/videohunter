@@ -1,13 +1,20 @@
 import re
 import ctypes
+import sys
+from .platform_support import mac_clipboard
 
 def get_clipboard_text() -> str:
+    if sys.platform == 'darwin':
+        return mac_clipboard()
+    if sys.platform != 'win32':
+        return ''
     user32 = ctypes.windll.user32
     kernel32 = ctypes.windll.kernel32
     
     # Try up to 5 times in case clipboard is temporarily locked by another app
     for _ in range(5):
         if user32.OpenClipboard(None):
+            text = ''
             try:
                 CF_UNICODETEXT = 13
                 user32.GetClipboardData.restype = ctypes.c_void_p
@@ -24,7 +31,6 @@ def get_clipboard_text() -> str:
                 return text
             finally:
                 user32.CloseClipboard()
-                return text
         ctypes.windll.kernel32.Sleep(100)
     return ""
 
